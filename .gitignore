@@ -1,6 +1,7 @@
 # build files
 as09
 .DS_Store
+build/
 
 # Prerequisites
 *.d
