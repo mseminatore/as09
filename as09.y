@@ -194,7 +194,7 @@ void push_file_stack(const char *filename)
 
     file_stack_ptr++;
     file_nodes[file_stack_ptr].fptr = fptr;
-    file_nodes[file_stack_ptr].filename = _strdup(filename);
+    file_nodes[file_stack_ptr].filename = strdup(filename);
     file_nodes[file_stack_ptr].yylineno = 1;
     file_nodes[file_stack_ptr].column = 1;
 
@@ -1148,7 +1148,7 @@ int add_fixup(int symbol, int addr, FIXUP_TYPE type)
     fixups[fixup_count].symbol      = symbol;
     fixups[fixup_count].addr        = addr;
     fixups[fixup_count].type        = type;
-    fixups[fixup_count].filename    = _strdup(CURRENT_FILE);
+    fixups[fixup_count].filename    = strdup(CURRENT_FILE);
     fixups[fixup_count].lineno      = CURRENT_LINENO;
 
     fixup_count++;
@@ -1250,7 +1250,7 @@ int add_symbol(const char *name, int lineno)
     if (lookup_symbol(name) > 0)
         return -1;
 
-    symbols[symbol_count].name      = _strdup(name);
+    symbols[symbol_count].name      = strdup(name);
     symbols[symbol_count].lineno    = lineno;
     symbols[symbol_count].type      = ST_UNDEF;
     symbols[symbol_count].value     = -1;
