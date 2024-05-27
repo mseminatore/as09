@@ -70,3 +70,16 @@ OR
 # Testing as09
 
 If you make modifications to as09, particularly ones that change the code generation you must run the test cases. These compare the hex file output of the `test.asm` file vs. the baseline file `test.hex`. If there are any changes then a code generation error may have been introduced.
+
+The tests can be run via Make or CMake. For makefile usage:
+
+```
+%make test
+```
+
+Or for Cmake projects:
+
+```
+%cd build
+%ctest
+```
