@@ -1789,7 +1789,7 @@ int main(int argc, char *argv[])
         else
             write_file();
 
-        printf("\n%s assembled %d bytes to '%s'\n", APP_NAME, addr, g_szOutputFilename);
+        printf("%s assembled %d bytes, %d total lines of code to '%s'\n\n", APP_NAME, addr, lineno, g_szOutputFilename);
     }
 
     fclose(fout);
