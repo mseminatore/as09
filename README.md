@@ -53,6 +53,20 @@ For CMake builds:
 %cmake --build .
 ```
 
+# Installing as09
+
+For Unix-like systems a shell script is provided that will install the as09 binary in the `/usr/bin/local` folder. You can invoke this using Make or by running the file links.sh directly.
+
+```
+%make install
+```
+
+OR
+
+```
+%sudo ./links.sh
+```
+
 # Testing as09
 
 If you make modifications to as09, particularly ones that change the code generation you must run the test cases. These compare the hex file output of the `test.asm` file vs. the baseline file `test.hex`. If there are any changes then a code generation error may have been introduced.
