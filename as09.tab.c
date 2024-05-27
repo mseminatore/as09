@@ -4810,6 +4810,7 @@ void usage()
 	printf("\nusage: %s [options] filename\n", APP_NAME);
     puts("-a\tgenerate asynchronous Verilog rom");
     puts("-b\toutput .bin file");
+//    puts("-d\tdebug parsing");
     puts("-i\tget input from stdin");
 	puts("-o file\tset output filename");
     puts("-r\tgenerate Verilog rom file");
@@ -4829,7 +4830,7 @@ void prologue(const char *filename, FILE *f, int addr_bits, int data_bits)
     fprintf(f, "//////////////////////////////////////////////////////////////////\n");
     fprintf(f, "// Verilog ROM file auto-generated from %s\n", filename);
     fprintf(f, "//\n");
-    fprintf(f, "// Using as09, see https://github.com/mseminatore/EMU6809\n");
+    fprintf(f, "// Using as09, see https://github.com/mseminatore/as09\n");
     fprintf(f, "//////////////////////////////////////////////////////////////////\n");
     fprintf(f, "module rom\n");
     fprintf(f, "(\n");
