@@ -1,3 +1,9 @@
+//================================================================================
+// as09 - an MC6809E cross-assember
+//
+// See LICENSE file for usage rights and obligations
+//================================================================================
+
 #ifndef __AS09_H
 #define __AS09_H
 
@@ -23,7 +29,7 @@
 #define FP_NONE     -1
 
 #ifdef _WIN32
-#   define strcasecmp stricmp
+#   define strcasecmp _stricmp
 #endif
 
 #ifndef TRUE
