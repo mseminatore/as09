@@ -39,4 +39,20 @@ There are some portions of Disk EDTASM+ that are not supported. Specifically:
 
 # Building as09
 
-You can build as09 using either Makefile or CMake.
+You can build as09 using either Makefile or CMake. For makefile builds use:
+
+```
+%make
+```
+
+For CMake builds:
+
+```
+%mkdir build
+%cmake ..
+%cmake --build .
+```
+
+# Testing as09
+
+If you make modifications to as09, particularly ones that change the code generation you must run the test cases. These compare the hex file output of the `test.asm` file vs. the baseline file `test.hex`. If there are any changes then a code generation error may have been introduced.
