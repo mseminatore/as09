@@ -623,7 +623,7 @@ void pop_file_stack()
 //-----------------------------------
 // next next char from input stream
 //-----------------------------------
-int getchar()
+int getch()
 {
     return fgetc(yyin);
 }
@@ -631,7 +631,7 @@ int getchar()
 //-----------------------------------
 // put char back to input stream
 //-----------------------------------
-int ungetchar(int c)
+int ungetch(int c)
 {
     return ungetc(c, yyin);
 }
@@ -4453,11 +4453,11 @@ void skipToEOL(void)
 
 	// skip to EOL
 	do {
-		c = getchar();
+		c = getch();
 	} while (c != '\n' && c != EOF);
 
 	// put last character back
-	ungetchar(c);
+	ungetch(c);
 }
 
 //----------------------------------
@@ -4467,11 +4467,11 @@ int follow(int expect, int ifyes, int ifno)
 {
 	int chr;
 
-	chr = getchar();
+	chr = getch();
 	if (chr == expect)
 		return ifyes;
 
-	ungetchar(chr);
+	ungetch(chr);
 	return ifno;
 }
 
@@ -4486,32 +4486,32 @@ int getNumber()
 	int base = 10;
 
 	// look for hex numbers
- 	c = getchar();
+ 	c = getch();
 
     if (c == '-' || c == '+')
     {
 		*bufptr++ = c;
-        c = getchar();
+        c = getch();
     }
 
 	if (c == '$' || (c == '0' && (follow('X', 1, 0) || follow('x', 1, 0))))
 		base = 16;
 	else
-		ungetchar(c);
+		ungetch(c);
 
 	if (base == 16)
 	{
-		while (isxdigit(c = getchar()))
+		while (isxdigit(c = getch()))
 			*bufptr++ = c;
 	}
 	else
 	{
-		while (isdigit((c = getchar())) || c == '.')
+		while (isdigit((c = getch())) || c == '.')
 			*bufptr++ = c;
 	}
 	
 	// need to put back the last character
-	ungetchar(c);
+	ungetch(c);
 
 	// make sure string is asciiz
 	*bufptr = '\0';
@@ -4530,7 +4530,7 @@ int backslash(int c)
 	if (c != '\\')
 		return c;
 
-	c = getchar();
+	c = getch();
 	if (islower(c) && strchr(translation_tab, c))
 		return strchr(translation_tab, c)[1];
 
@@ -4545,7 +4545,7 @@ int getString(int delim)
     int c;
     char buf[BUF_SIZE], *cptr = buf;
 
-    c = getchar();
+    c = getch();
 
     while (c != delim && cptr < &buf[sizeof(buf)])
     {
@@ -4553,7 +4553,7 @@ int getString(int delim)
             yyerror("missing end quote");
 
         *cptr++ = backslash(c);
-        c = getchar();
+        c = getch();
     }
     
     *cptr = 0;
@@ -4600,7 +4600,7 @@ int yylex()
 
 yylex01:
     // skip leading whitespace
-    while ((c = getchar()) == ' ' || c == '\t');
+    while ((c = getch()) == ' ' || c == '\t');
 
     // see if input is empty
     if (c == EOF)
@@ -4624,14 +4624,14 @@ yylex01:
     // look for char literals
     if (c == '\'')
     {
-        c = getchar();
+        c = getch();
         if (follow('\'', 1, 0))
         {
             yylval.ival = backslash(c);
             return CHAR;
         }
 
-        ungetchar(c);
+        ungetch(c);
         return getString('\'');
     }
 
@@ -4646,14 +4646,14 @@ yylex01:
 	{
         if (c == '-' || c == '+')
         {
-            int n = getchar();
-            ungetchar(n);
+            int n = getch();
+            ungetch(n);
 
             if (n != '$' && !isdigit(n))
                 return c;
         }
 
-		ungetchar(c);
+		ungetch(c);
 		return getNumber();
 	}
 
@@ -4664,10 +4664,10 @@ yylex01:
 
         do {
             *p++ = c;
-        } while ((c=getchar()) != EOF && (c == '_' || isalnum(c)));
+        } while ((c=getch()) != EOF && (c == '_' || isalnum(c)));
         
         // put back the last character!
-        ungetchar(c);
+        ungetch(c);
 
         // be sure to null terminate the string
         *p = 0;
