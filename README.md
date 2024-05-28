@@ -1,6 +1,7 @@
 # as09
 ![GitHub License](https://img.shields.io/github/license/mseminatore/as09)
 [![CMake](https://github.com/mseminatore/as09/actions/workflows/cmake.yml/badge.svg)](https://github.com/mseminatore/as09/actions/workflows/cmake.yml)
+[![CodeQL](https://github.com/mseminatore/as09/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/mseminatore/as09/actions/workflows/github-code-scanning/codeql)
 
 This project is an MC6809 cross assembler. It is written in portable C using
 yacc/bison for the parser and a handwritten lexical analyzer.
