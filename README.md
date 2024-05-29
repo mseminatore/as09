@@ -26,6 +26,8 @@ language code bases on both the [XROAR](https://colorcomputerarchive.com/xroar-o
 
 > If you find any code generation bugs please report them!
 
+This project pairs with my [dsktools](https://www.github.com/mseminatore/dsktools) project. The `dsktools` application enables creation of RS-DOS compatible virtual disk (.DSK) files which can be loaded in CoCo emulators like XROAR or physical machines via CoCo SDC.
+
 # 6809 Assembly
 
 The as09 assembler follows the Motorola MC6809 and EDTASM+ syntax which you can
@@ -38,34 +40,72 @@ There are some portions of Disk EDTASM+ that are not supported. Specifically:
 - Conditional compilation
 - Emulation and debugging
 
+# Using as09
+
+Using the assembler is easy. Here is a small example program the prints out a string on the screen.
+
+```asm
+;---------------------------------------------------
+; Hello World for the TRS-80 CoCo in MC6809 assembly
+;---------------------------------------------------
+CHARIN EQU $A000
+CHAROUT EQU $A002
+STRING FCC 'Hello World!' FCB 0
+
+START
+  LDX #STRING    ; get ptr to string
+
+LOOP
+  LDA ,X+        ; get next character
+  BEQ DONE       ; if finished quit
+
+  JSR [CHAROUT]  ; print out next char
+  BRA LOOP       ; do it again
+
+DONE
+  JSR [CHARIN]   ; poll keyboard
+  BEQ DONE       ; wait for keypress
+  SWI            ; quit
+END START
+```
+
+Save that code to a file called hello.asm and assemble it as follows:
+
+```console
+% as09 hello.asm
+as09 v0.4.0 - an MC6809 assembler by Mark Seminatore (c) 2024
+as09 assembled 27 bytes, 20 total lines of code to 'a.out'
+```
+
 # Building as09
 
 You can build as09 using either Makefile or CMake. For makefile builds use:
 
-```
-%make
+```console
+% make
 ```
 
 For CMake builds:
 
-```
-%mkdir build
-%cmake ..
-%cmake --build .
+```console
+% mkdir build
+% cd build
+% cmake ..
+% cmake --build .
 ```
 
 # Installing as09
 
 For Unix-like systems a shell script is provided that will install the as09 binary in the `/usr/bin/local` folder. You can invoke this using Make or by running the file links.sh directly.
 
-```
-%make install
+```console
+% make install
 ```
 
 OR
 
-```
-%sudo ./links.sh
+```console
+% sudo ./links.sh
 ```
 
 # Testing as09
@@ -74,13 +114,13 @@ If you make modifications to as09, particularly ones that change the code genera
 
 The tests can be run via Make or CMake. For makefile usage:
 
-```
-%make test
+```console
+% make test
 ```
 
 Or for Cmake projects:
 
-```
-%cd build
-%ctest
+```console
+% cd build
+% ctest
 ```
