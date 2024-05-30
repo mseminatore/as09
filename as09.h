@@ -11,7 +11,7 @@
 // constant decls
 //-----------------
 #define APP_NAME "as09"
-#define APP_VER "0.4.0"
+#define APP_VER "0.4.1"
 
 #define DONE 0
 
@@ -116,7 +116,8 @@ typedef struct
     const char *name;
     int type;
     int value;
-    int lineno;
+    int lineno;             // local file line number
+    int refd;               // was symbol referenced?
 } Symbol_t;
 
 // fixup structure def'n

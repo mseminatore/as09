@@ -428,6 +428,7 @@ int g_bBinaryRom    = FALSE;
 int g_bCompactFile  = FALSE;
 int g_bHexFile      = FALSE;
 int g_bSymbols      = FALSE;
+int g_bUnreferenced = FALSE;
 
 // parser tracking
 int lineno = 1;
@@ -1399,32 +1400,32 @@ static const yytype_int16 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   598,   598,   601,   602,   603,   606,   607,   610,   611,
-     612,   613,   614,   617,   620,   621,   622,   623,   624,   625,
-     626,   627,   628,   631,   632,   633,   634,   635,   636,   637,
-     638,   639,   640,   643,   644,   645,   646,   647,   648,   649,
-     650,   651,   654,   655,   656,   659,   660,   663,   664,   667,
-     668,   671,   672,   673,   674,   675,   678,   679,   680,   681,
-     682,   683,   684,   685,   686,   687,   688,   689,   690,   691,
-     694,   695,   696,   697,   698,   699,   700,   701,   702,   703,
-     704,   705,   706,   707,   708,   709,   710,   711,   712,   713,
-     714,   715,   716,   717,   718,   719,   720,   721,   722,   723,
-     724,   725,   726,   727,   728,   730,   731,   732,   733,   734,
-     735,   736,   737,   738,   739,   740,   741,   742,   743,   744,
-     745,   746,   747,   748,   749,   750,   751,   752,   753,   754,
-     755,   756,   757,   758,   759,   760,   761,   762,   763,   764,
-     765,   766,   767,   768,   769,   770,   771,   772,   773,   774,
-     775,   776,   777,   778,   779,   780,   781,   782,   783,   784,
-     785,   786,   787,   788,   789,   790,   791,   792,   793,   794,
-     795,   796,   797,   798,   799,   800,   801,   802,   803,   804,
-     805,   806,   807,   808,   809,   810,   811,   812,   813,   814,
-     815,   816,   817,   818,   819,   820,   821,   822,   823,   824,
-     825,   826,   827,   828,   829,   830,   831,   832,   833,   835,
-     836,   837,   838,   839,   840,   841,   844,   845,   848,   849,
-     852,   853,   856,   857,   860,   861,   862,   863,   864,   865,
-     866,   867,   868,   869,   871,   872,   873,   874,   875,   876,
-     877,   878,   879,   880,   883,   884,   885,   886,   889,   890,
-     891
+       0,   599,   599,   602,   603,   604,   607,   608,   611,   612,
+     613,   614,   615,   618,   621,   622,   623,   624,   625,   626,
+     627,   628,   629,   632,   633,   634,   635,   636,   637,   638,
+     639,   640,   641,   644,   645,   646,   647,   648,   649,   650,
+     651,   652,   655,   656,   657,   660,   661,   664,   665,   668,
+     669,   672,   673,   674,   675,   676,   679,   680,   681,   682,
+     683,   684,   685,   686,   687,   688,   689,   690,   691,   692,
+     695,   696,   697,   698,   699,   700,   701,   702,   703,   704,
+     705,   706,   707,   708,   709,   710,   711,   712,   713,   714,
+     715,   716,   717,   718,   719,   720,   721,   722,   723,   724,
+     725,   726,   727,   728,   729,   731,   732,   733,   734,   735,
+     736,   737,   738,   739,   740,   741,   742,   743,   744,   745,
+     746,   747,   748,   749,   750,   751,   752,   753,   754,   755,
+     756,   757,   758,   759,   760,   761,   762,   763,   764,   765,
+     766,   767,   768,   769,   770,   771,   772,   773,   774,   775,
+     776,   777,   778,   779,   780,   781,   782,   783,   784,   785,
+     786,   787,   788,   789,   790,   791,   792,   793,   794,   795,
+     796,   797,   798,   799,   800,   801,   802,   803,   804,   805,
+     806,   807,   808,   809,   810,   811,   812,   813,   814,   815,
+     816,   817,   818,   819,   820,   821,   822,   823,   824,   825,
+     826,   827,   828,   829,   830,   831,   832,   833,   834,   836,
+     837,   838,   839,   840,   841,   842,   845,   846,   849,   850,
+     853,   854,   857,   858,   861,   862,   863,   864,   865,   866,
+     867,   868,   869,   870,   872,   873,   874,   875,   876,   877,
+     878,   879,   880,   881,   884,   885,   886,   887,   890,   891,
+     892
 };
 #endif
 
@@ -2679,7 +2680,7 @@ yyreduce:
     {
         case 5:
 
-    { if (symbols[(yyvsp[(2) - (2)].symbol)].type != ST_LABEL) yyerror("undefined label"); start_addr = /*origin_addr +*/ symbols[(yyvsp[(2) - (2)].symbol)].value; LOG("start addr set to '%s' ($%04X)\n", symbols[(yyvsp[(2) - (2)].symbol)].name, start_addr);;}
+    { if (symbols[(yyvsp[(2) - (2)].symbol)].type != ST_LABEL) yyerror("undefined label"); symbols[(yyvsp[(2) - (2)].symbol)].refd++; start_addr = /*origin_addr +*/ symbols[(yyvsp[(2) - (2)].symbol)].value; LOG("start addr set to '%s' ($%04X)\n", symbols[(yyvsp[(2) - (2)].symbol)].name, start_addr);;}
     break;
 
   case 9:
@@ -2699,7 +2700,7 @@ yyreduce:
 
   case 12:
 
-    { push_file_stack(symbols[(yyvsp[(2) - (2)].symbol)].name); ;}
+    { push_file_stack(symbols[(yyvsp[(2) - (2)].symbol)].name); symbols[(yyvsp[(2) - (2)].symbol)].refd++;;}
     break;
 
   case 13:
@@ -2794,7 +2795,7 @@ yyreduce:
 
   case 34:
 
-    { if (symbols[(yyvsp[(1) - (1)].symbol)].type != ST_EQU && symbols[(yyvsp[(1) - (1)].symbol)].type != ST_SET) yyerror("non const in const expr"); (yyval.ival) = symbols[(yyvsp[(1) - (1)].symbol)].value; ;}
+    { if (symbols[(yyvsp[(1) - (1)].symbol)].type != ST_EQU && symbols[(yyvsp[(1) - (1)].symbol)].type != ST_SET) yyerror("non const in const expr"); (yyval.ival) = symbols[(yyvsp[(1) - (1)].symbol)].value; symbols[(yyvsp[(1) - (1)].symbol)].refd++;;}
     break;
 
   case 35:
@@ -2839,12 +2840,12 @@ yyreduce:
 
   case 44:
 
-    { if (symbols[(yyvsp[(1) - (1)].symbol)].type == ST_UNDEF) { fixup_pending_index = add_fixup((yyvsp[(1) - (1)].symbol), addr + 1, FIXUP_IMM8); (yyval.ival) = SA_UNDEF; } else (yyval.ival) = symbols[(yyvsp[(1) - (1)].symbol)].value; ;}
+    { if (symbols[(yyvsp[(1) - (1)].symbol)].type == ST_UNDEF) { fixup_pending_index = add_fixup((yyvsp[(1) - (1)].symbol), addr + 1, FIXUP_IMM8); (yyval.ival) = SA_UNDEF; } else (yyval.ival) = symbols[(yyvsp[(1) - (1)].symbol)].value; symbols[(yyvsp[(1) - (1)].symbol)].refd++;;}
     break;
 
   case 46:
 
-    { if (symbols[(yyvsp[(1) - (1)].symbol)].type == ST_UNDEF) { fixup_pending_index = add_fixup((yyvsp[(1) - (1)].symbol), addr + 1, FIXUP_IMM16); (yyval.ival) = SA_UNDEF; } else (yyval.ival) = symbols[(yyvsp[(1) - (1)].symbol)].value; ;}
+    { if (symbols[(yyvsp[(1) - (1)].symbol)].type == ST_UNDEF) { fixup_pending_index = add_fixup((yyvsp[(1) - (1)].symbol), addr + 1, FIXUP_IMM16); (yyval.ival) = SA_UNDEF; } else (yyval.ival) = symbols[(yyvsp[(1) - (1)].symbol)].value; symbols[(yyvsp[(1) - (1)].symbol)].refd++;;}
     break;
 
   case 47:
@@ -4252,6 +4253,10 @@ int getopt(int n, char *args[])
         if (args[i][1] == 'b')
             g_bBinaryRom = TRUE;
 
+        // flag for unreferenced symbols
+        if (args[i][1] == 'u')
+            g_bUnreferenced = TRUE;
+
         // flag for generating Verilog rom
         if (args[i][1] == 'r')
             g_bROM = TRUE;
@@ -4412,6 +4417,7 @@ int add_symbol(const char *name, int lineno)
     symbols[symbol_count].lineno    = lineno;
     symbols[symbol_count].type      = ST_UNDEF;
     symbols[symbol_count].value     = -1;
+    symbols[symbol_count].refd      = 0;
 
     symbol_count++;
     return symbol_count - 1;
@@ -4440,6 +4446,22 @@ void dump_symbols()
     for (int i = 0; i < symbol_count; i++)
     {
         if (symbols[i].type == ST_LABEL)
+            printf("%10s\t%04X\n", symbols[i].name, symbols[i].value);
+    }
+}
+
+//-------------------------------
+// print out unreferenced symbols
+//-------------------------------
+void dump_unrefd_symbols()
+{
+    // alpha sort symbols
+    // qsort(symbols, symbol_count, sizeof(Symbol_t), compare_fn);
+
+    puts("\nUnferenced Symbols");
+    for (int i = 0; i < symbol_count; i++)
+    {
+        if (symbols[i].refd == 0 && symbols[i].type == ST_LABEL)
             printf("%10s\t%04X\n", symbols[i].name, symbols[i].value);
     }
 }
@@ -4816,6 +4838,7 @@ void usage()
     puts("-r\tgenerate Verilog rom file");
     puts("-s\tuse System Verilog");
     puts("-t\tdump symbol table");
+    puts("-u\tdump unreferenced symbols");
 	puts("-v\tverbose output");
     puts("-x\tgenerate Intel hex file\n");
 	exit(0);
@@ -4914,7 +4937,7 @@ int main(int argc, char *argv[])
     if (argc == 1)
 		usage();
 
-    printf("%s v%s - an MC6809 assembler by Mark Seminatore (c) 2024\n", APP_NAME, APP_VER);
+    printf("%s v%s - an MC6809 cross-assembler by Mark Seminatore (c) 2024\n", APP_NAME, APP_VER);
 
 	int iFirstArg = getopt(argc, argv);
 
@@ -4951,12 +4974,18 @@ int main(int argc, char *argv[])
 
     fclose(fout);
 
+    // report any warnings/errors
     if (warn_count || err_count)
         printf("\n%04d errors, %04d warnings found!\n\n", err_count, warn_count);
 
+    // dump the symbol table if requested
     if (g_bSymbols)
         dump_symbols();
 
-    return 0;
+    if (g_bUnreferenced)
+        dump_unrefd_symbols();
+
+    // return err count for make/test purposes
+    return err_count;
 }
 

@@ -27,6 +27,7 @@ int g_bBinaryRom    = FALSE;
 int g_bCompactFile  = FALSE;
 int g_bHexFile      = FALSE;
 int g_bSymbols      = FALSE;
+int g_bUnreferenced = FALSE;
 
 // parser tracking
 int lineno = 1;
@@ -600,7 +601,7 @@ file: lines end
 
 end:
     | END
-    | END ID    { if (symbols[$2].type != ST_LABEL) yyerror("undefined label"); start_addr = /*origin_addr +*/ symbols[$2].value; LOG("start addr set to '%s' ($%04X)\n", symbols[$2].name, start_addr);}
+    | END ID    { if (symbols[$2].type != ST_LABEL) yyerror("undefined label"); symbols[$2].refd++; start_addr = /*origin_addr +*/ symbols[$2].value; LOG("start addr set to '%s' ($%04X)\n", symbols[$2].name, start_addr);}
     ;
 
 lines:
@@ -611,7 +612,7 @@ line: label
     | instruction       { fixup_pending_index = FP_NONE; }
     | ID EQU word_expr  { if (symbols[$1].type != ST_UNDEF) yyerror("equate already defined"); symbols[$1].value = $3; symbols[$1].type = ST_EQU; }
     | ID SET word_expr  { symbols[$1].value = $3; symbols[$1].type = ST_SET; }
-    | INCLUDE STRING    { push_file_stack(symbols[$2].name); }
+    | INCLUDE STRING    { push_file_stack(symbols[$2].name); symbols[$2].refd++;}
     ;
 
 label: ID    { if (symbols[$1].type != ST_UNDEF) yyerror("label already defined"); symbols[$1].value = origin_addr + addr; symbols[$1].type = ST_LABEL; }
@@ -641,7 +642,7 @@ word_expr: imm16
     ;
 
 const_expr: NUMBER
-    | ID                            { if (symbols[$1].type != ST_EQU && symbols[$1].type != ST_SET) yyerror("non const in const expr"); $$ = symbols[$1].value; }
+    | ID                            { if (symbols[$1].type != ST_EQU && symbols[$1].type != ST_SET) yyerror("non const in const expr"); $$ = symbols[$1].value; symbols[$1].refd++;}
     | const_expr '+' const_expr     { $$ = $1 + $3; }
     | const_expr '-' const_expr     { $$ = $1 - $3; }
     | const_expr '*' const_expr     { $$ = $1 * $3; }
@@ -653,11 +654,11 @@ const_expr: NUMBER
 
 imm8: NUMBER    { if (HIBYTE($1) && ($1 < -128 || $1 > 127)) yyerror("byte value expected"); $$ = LOBYTE($1); }
     | CHAR
-    | ID        { if (symbols[$1].type == ST_UNDEF) { fixup_pending_index = add_fixup($1, addr + 1, FIXUP_IMM8); $$ = SA_UNDEF; } else $$ = symbols[$1].value; }
+    | ID        { if (symbols[$1].type == ST_UNDEF) { fixup_pending_index = add_fixup($1, addr + 1, FIXUP_IMM8); $$ = SA_UNDEF; } else $$ = symbols[$1].value; symbols[$1].refd++;}
     ;
 
 imm16: NUMBER
-    | ID        { if (symbols[$1].type == ST_UNDEF) { fixup_pending_index = add_fixup($1, addr + 1, FIXUP_IMM16); $$ = SA_UNDEF; } else $$ = symbols[$1].value; }
+    | ID        { if (symbols[$1].type == ST_UNDEF) { fixup_pending_index = add_fixup($1, addr + 1, FIXUP_IMM16); $$ = SA_UNDEF; } else $$ = symbols[$1].value; symbols[$1].refd++;}
     ;
 
 op8: '#' byte_expr                      { emit_buf($2); $$ = AM_IMM; }
@@ -1094,6 +1095,10 @@ int getopt(int n, char *args[])
         if (args[i][1] == 'b')
             g_bBinaryRom = TRUE;
 
+        // flag for unreferenced symbols
+        if (args[i][1] == 'u')
+            g_bUnreferenced = TRUE;
+
         // flag for generating Verilog rom
         if (args[i][1] == 'r')
             g_bROM = TRUE;
@@ -1254,6 +1259,7 @@ int add_symbol(const char *name, int lineno)
     symbols[symbol_count].lineno    = lineno;
     symbols[symbol_count].type      = ST_UNDEF;
     symbols[symbol_count].value     = -1;
+    symbols[symbol_count].refd      = 0;
 
     symbol_count++;
     return symbol_count - 1;
@@ -1282,6 +1288,22 @@ void dump_symbols()
     for (int i = 0; i < symbol_count; i++)
     {
         if (symbols[i].type == ST_LABEL)
+            printf("%10s\t%04X\n", symbols[i].name, symbols[i].value);
+    }
+}
+
+//-------------------------------
+// print out unreferenced symbols
+//-------------------------------
+void dump_unrefd_symbols()
+{
+    // alpha sort symbols
+    // qsort(symbols, symbol_count, sizeof(Symbol_t), compare_fn);
+
+    puts("\nUnferenced Symbols");
+    for (int i = 0; i < symbol_count; i++)
+    {
+        if (symbols[i].refd == 0 && symbols[i].type == ST_LABEL)
             printf("%10s\t%04X\n", symbols[i].name, symbols[i].value);
     }
 }
@@ -1658,6 +1680,7 @@ void usage()
     puts("-r\tgenerate Verilog rom file");
     puts("-s\tuse System Verilog");
     puts("-t\tdump symbol table");
+    puts("-u\tdump unreferenced symbols");
 	puts("-v\tverbose output");
     puts("-x\tgenerate Intel hex file\n");
 	exit(0);
@@ -1756,7 +1779,7 @@ int main(int argc, char *argv[])
     if (argc == 1)
 		usage();
 
-    printf("%s v%s - an MC6809 assembler by Mark Seminatore (c) 2024\n", APP_NAME, APP_VER);
+    printf("%s v%s - an MC6809 cross-assembler by Mark Seminatore (c) 2024\n", APP_NAME, APP_VER);
 
 	int iFirstArg = getopt(argc, argv);
 
@@ -1793,11 +1816,17 @@ int main(int argc, char *argv[])
 
     fclose(fout);
 
+    // report any warnings/errors
     if (warn_count || err_count)
         printf("\n%04d errors, %04d warnings found!\n\n", err_count, warn_count);
 
+    // dump the symbol table if requested
     if (g_bSymbols)
         dump_symbols();
 
-    return 0;
+    if (g_bUnreferenced)
+        dump_unrefd_symbols();
+
+    // return err count for make/test purposes
+    return err_count;
 }
