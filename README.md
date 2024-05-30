@@ -40,9 +40,16 @@ There are some portions of Disk EDTASM+ that are not supported. Specifically:
 - Conditional compilation
 - Emulation and debugging
 
+## Instruction extensions
+
+Mnemonic | Description
+-------- | -----------
+FCZ | Declares a null terminated string
+
 # Using as09
 
-Using the assembler is easy. Here is a small example program the prints out a string on the screen.
+Using the assembler is straightforward. Here is a small example program for 
+the TRS-80 CoCo that prints out a string on the screen.
 
 ```asm
 ;---------------------------------------------------
@@ -57,7 +64,7 @@ START
 
 LOOP
   LDA ,X+        ; get next character
-  BEQ DONE       ; if finished quit
+  BEQ DONE       ; if null terminator then done
 
   JSR [CHAROUT]  ; print out next char
   BRA LOOP       ; do it again
