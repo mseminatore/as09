@@ -42,9 +42,15 @@ There are some portions of Disk EDTASM+ that are not supported. Specifically:
 
 ## Instruction extensions
 
+as09 adds several optional instruction extensions for convenience. These are as follows:
+
 Mnemonic | Description
 -------- | -----------
 FCZ | Declares a null terminated string
+CLRC | Clear carry flag, ANDCC #$FE
+CLRZ | Clear zero flag, ANDCC #$FC
+SETC | Set carry flag, ORCC #$01
+SETZ | Set zero flag, ORCC #$04
 
 # Using as09
 
