@@ -589,6 +589,7 @@ void rel_branch(BRANCH_TYPE branch_dist, int op, int dest_addr)
 %token <ival> SBCA SBCB ROL ROR STA STB STD STX STY STS STU SUBA SUBB SUBD
 %token <ival> NUMBER A B D X Y U S PC CC DP PCR
 %token <ival> SETDP ORG FCB FDB FCC RMB END FCZ
+%token <ival> SETC CLRC SETZ CLRZ
 
 %type <ival> register index_register accumulator imm8 imm16 op8 op16 push_registers push_register
 %type <ival> direct_indexed_extended indexed words bytes byte_expr word_expr const_expr
@@ -736,6 +737,8 @@ instruction: ABX    { emit(0x3A); }
     | ANDA op8  { emit(opcodes[OP_ANDA].ops[$2]); write_inb(); }
     | ANDB op8  { emit(opcodes[OP_ANDB].ops[$2]); write_inb(); }
     | ANDCC '#' byte_expr { emit(0x1C); emit(LOBYTE($3)); }
+    | CLRC      { emit(0x1C); emit(0xFE); }
+    | CLRZ      { emit(0x1C); emit(0xFC); }
     | ASL direct_indexed_extended   { emit(opcodes[OP_ASL].ops[$2]); write_inb(); }
     | ASR direct_indexed_extended   { emit(opcodes[OP_ASR].ops[$2]); write_inb(); }
     | BITA op8  { emit(opcodes[OP_BITA].ops[$2]); write_inb(); }
@@ -812,6 +815,8 @@ instruction: ABX    { emit(0x3A); }
     | ORA op8                       { emit(opcodes[OP_ORA].ops[$2]); write_inb(); }
     | ORB op8                       { emit(opcodes[OP_ORB].ops[$2]); write_inb(); }
     | ORCC '#' byte_expr            { emit(0x1A); emit(LOBYTE($3)); }
+    | SETZ                          { emit(0x1A); emit(4); }
+    | SETC                          { emit(0x1A); emit(1); }
     | PSHS push_registers           { emit(0x34); emit($2); }
     | PSHU push_registers           { emit(0x36); emit($2); }
     | PULS push_registers           { emit(0x35); emit($2); }
@@ -1051,6 +1056,12 @@ Tokens tokens[] =
     {"PCR", PCR},
     {"CC", CC},
     {"DP", DP},
+
+    // instruction extensions
+    {"SETC", SETC},
+    {"CLRC", CLRC},
+    {"SETZ", SETZ},
+    {"CLRZ", CLRZ},
 
     // pseudo instructions
     {"ORG", ORG},

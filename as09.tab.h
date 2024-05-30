@@ -203,7 +203,11 @@
      FCC = 419,
      RMB = 420,
      END = 421,
-     FCZ = 422
+     FCZ = 422,
+     SETC = 423,
+     CLRC = 424,
+     SETZ = 425,
+     CLRZ = 426
    };
 #endif
 /* Tokens.  */
@@ -372,6 +376,10 @@
 #define RMB 420
 #define END 421
 #define FCZ 422
+#define SETC 423
+#define CLRC 424
+#define SETZ 425
+#define CLRZ 426
 
 
 
