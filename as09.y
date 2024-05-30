@@ -738,7 +738,7 @@ instruction: ABX    { emit(0x3A); }
     | ANDB op8  { emit(opcodes[OP_ANDB].ops[$2]); write_inb(); }
     | ANDCC '#' byte_expr { emit(0x1C); emit(LOBYTE($3)); }
     | CLRC      { emit(0x1C); emit(0xFE); }
-    | CLRZ      { emit(0x1C); emit(0xFC); }
+    | CLRZ      { emit(0x1C); emit(0xFB); }
     | ASL direct_indexed_extended   { emit(opcodes[OP_ASL].ops[$2]); write_inb(); }
     | ASR direct_indexed_extended   { emit(opcodes[OP_ASR].ops[$2]); write_inb(); }
     | BITA op8  { emit(opcodes[OP_BITA].ops[$2]); write_inb(); }

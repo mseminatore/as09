@@ -3179,7 +3179,7 @@ yyreduce:
 
   case 114:
 
-    { emit(0x1C); emit(0xFC); ;}
+    { emit(0x1C); emit(0xFB); ;}
     break;
 
   case 115:
