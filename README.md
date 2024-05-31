@@ -107,6 +107,7 @@ along with `-o` to name the file. For example
 % as09 -b -o hello.bin hello.asm
 as09 v0.4.1 - an MC6809 cross-assembler by Mark Seminatore (c) 2024
 as09 assembled 33 bytes, 23 total lines of code to 'hello.bin'
+```
 
 # Building as09
 
