@@ -4,7 +4,9 @@
 [![CodeQL](https://github.com/mseminatore/as09/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/mseminatore/as09/actions/workflows/github-code-scanning/codeql)
 
 This project is an MC6809 cross assembler. It is written in portable C using
-yacc/bison for the parser and a handwritten lexical analyzer.
+yacc/bison for the parser and a handwritten lexical analyzer. The code is 
+parsed in a single-pass using a fixup mechanism to back-patch forward 
+references to symbols.
 
 The main goal of this project was to create a cross assembler compatible with 
 EDTASM+ syntax for the TRS-80 Color Computer. To that end the assembler can 
@@ -40,17 +42,25 @@ There are some portions of Disk EDTASM+ that are not supported. Specifically:
 - Conditional compilation
 - Emulation and debugging
 
-## Instruction extensions
+## Assembler extensions
 
-as09 adds several optional instruction extensions for convenience. These are as follows:
+as09 adds several optional instruction extensions for convenience. They are:
 
 Mnemonic | Description
 -------- | -----------
-FCZ | Declares a null terminated string
 CLRC | Clear carry flag, ANDCC #$FE
 CLRZ | Clear zero flag, ANDCC #$FC
+FCZ string | Declares a null terminated string
+INCLUDE string | Includes file in assembly
 SETC | Set carry flag, ORCC #$01
 SETZ | Set zero flag, ORCC #$04
+
+The parser for as09 enables a few modern features like C-style backslash
+character processing in strings. For example, use `\r` in a string to
+include a carriage-return.
+
+Other C-style operators that can be used in expressions include the bitwise 
+AND `&`, OR `|` and NOT `~` operators.
 
 # Using as09
 
@@ -87,8 +97,16 @@ Save that code to a file called hello.asm and assemble it as follows:
 ```console
 % as09 hello.asm
 as09 v0.4.0 - an MC6809 assembler by Mark Seminatore (c) 2024
-as09 assembled 27 bytes, 20 total lines of code to 'a.out'
+as09 assembled 33 bytes, 23 total lines of code to 'a.out'
 ```
+
+To generate a binary file ready to execute on the CoCo use the `-b` option
+along with `-o` to name the file. For example
+
+```console
+% as09 -b -o hello.bin hello.asm
+as09 v0.4.1 - an MC6809 cross-assembler by Mark Seminatore (c) 2024
+as09 assembled 33 bytes, 23 total lines of code to 'hello.bin'
 
 # Building as09
 
@@ -109,7 +127,9 @@ For CMake builds:
 
 # Installing as09
 
-For Unix-like systems a shell script is provided that will install the as09 binary in the `/usr/bin/local` folder. You can invoke this using Make or by running the file links.sh directly.
+For Unix-like systems a shell script is provided that will install a link to 
+the as09 binary in the `/usr/bin/local` folder. You can invoke this using Make
+or by running the file links.sh directly.
 
 ```console
 % make install
@@ -123,7 +143,10 @@ OR
 
 # Testing as09
 
-If you make modifications to as09, particularly ones that change the code generation you must run the test cases. These compare the hex file output of the `test.asm` file vs. the baseline file `test.hex`. If there are any changes then a code generation error may have been introduced.
+If you make modifications to as09, particularly ones that change the code 
+generation you must run the test cases. These compare the hex file output
+of the `test.asm` file vs. the baseline file `test.hex`. If there are any
+changes then a code generation error may have been introduced.
 
 The tests can be run via Make or CMake. For makefile usage:
 
