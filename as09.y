@@ -1395,9 +1395,9 @@ int getNumber()
     return NUMBER;
 }
 
-//------------------------
+//-------------------------------
 // translate backslash characters
-//------------------------
+//-------------------------------
 int backslash(int c)
 {
 	static char translation_tab[] = "b\bf\fn\nr\rt\t";
@@ -1651,9 +1651,9 @@ void write_hex_file()
     fprintf(fout, ":00000001FF\n");
 }
 
-//------------------------
+//-------------------------
 // write out DECB .bin file
-//------------------------
+//-------------------------
 void write_bin_file()
 {
     BinFileHeader pre;
@@ -1750,9 +1750,9 @@ void prologue(const char *filename, FILE *f, int addr_bits, int data_bits)
         fprintf(f, "\t\tcase (addr)\n");
 }
 
-//------------------------
+//-------------------------
 // generate template epilog
-//------------------------
+//-------------------------
 void epilog(FILE *f) 
 {
     fputs("\t\tendcase\n", f);
