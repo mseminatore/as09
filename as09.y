@@ -841,7 +841,7 @@ instruction: ABX    { emit(0x3A); }
     | SETDP byte_expr   { direct_page_addr = $2; LOG("DP set to $%02X\n", direct_page_addr); }
     | ORG NUMBER        { if (origin_addr != 0) yyerror("origin already set"); start_addr = origin_addr = $2; LOG("ORG set to $%04X\n", origin_addr); }
     | FCB bytes
-    | FDB words
+    | FDB words         {  }
     | FCC strings
     | FCZ strings       { emit(0); }
     | RMB const_expr    { addr += $2; }
@@ -855,8 +855,8 @@ bytes: byte_expr               { if ($$ > 255) yyerror("byte value expected"); e
     | bytes ',' byte_expr      { if ($3 > 255) yyerror("byte value expected"); emit(LOBYTE($3)); }
     ;
 
-words: word_expr             { emit_word($$); }
-    | words ',' word_expr    { emit_word($3); }
+words: word_expr             { adjust_fixup(FIXUP_NOCHANGE, -1); emit_word($$); }
+    | words ',' word_expr    { adjust_fixup(FIXUP_NOCHANGE, -1); emit_word($3); }
     ;
 
 push_registers: push_register
@@ -1682,6 +1682,7 @@ void write_bin_file()
 //------------------------
 void usage()
 {
+    printf("%s v%s - an MC6809 cross-assembler by Mark Seminatore (c) 2024\n", APP_NAME, APP_VER);
 	printf("\nusage: %s [options] filename\n", APP_NAME);
     puts("-a\tgenerate asynchronous Verilog rom");
     puts("-b\toutput .bin file");

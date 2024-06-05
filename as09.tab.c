@@ -3682,6 +3682,11 @@ yyreduce:
     { if (origin_addr != 0) yyerror("origin already set"); start_addr = origin_addr = (yyvsp[(2) - (2)].ival); LOG("ORG set to $%04X\n", origin_addr); ;}
     break;
 
+  case 216:
+
+    {  ;}
+    break;
+
   case 218:
 
     { emit(0); ;}
@@ -3714,12 +3719,12 @@ yyreduce:
 
   case 224:
 
-    { emit_word((yyval.ival)); ;}
+    { adjust_fixup(FIXUP_NOCHANGE, -1); emit_word((yyval.ival)); ;}
     break;
 
   case 225:
 
-    { emit_word((yyvsp[(3) - (3)].ival)); ;}
+    { adjust_fixup(FIXUP_NOCHANGE, -1); emit_word((yyvsp[(3) - (3)].ival)); ;}
     break;
 
   case 227:
@@ -4864,6 +4869,7 @@ void write_bin_file()
 //------------------------
 void usage()
 {
+    printf("%s v%s - an MC6809 cross-assembler by Mark Seminatore (c) 2024\n", APP_NAME, APP_VER);
 	printf("\nusage: %s [options] filename\n", APP_NAME);
     puts("-a\tgenerate asynchronous Verilog rom");
     puts("-b\toutput .bin file");
