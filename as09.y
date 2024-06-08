@@ -606,7 +606,7 @@ end:
     ;
 
 lines:
-    | lines line
+    | lines line        { yyerrok; }
     ;
 
 line: label
