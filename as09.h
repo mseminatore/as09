@@ -11,7 +11,7 @@
 // constant decls
 //-----------------
 #define APP_NAME "as09"
-#define APP_VER "0.4.2"
+#define APP_VER "0.4.3"
 
 #define DONE 0
 

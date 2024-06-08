@@ -4256,6 +4256,8 @@ Tokens tokens[] =
     {"CLRZ", CLRZ},
 
     // pseudo instructions
+    {"BNZ", BNE},
+    {"BZ", BEQ},
     {"ORG", ORG},
     {"SETDP", SETDP},
     {"FCB", FCB},
