@@ -74,8 +74,8 @@ the TRS-80 CoCo that prints out a string on the screen.
 ;---------------------------------------------------
 ; Hello World for the TRS-80 CoCo in MC6809 assembly
 ;---------------------------------------------------
-CHARIN: EQU $A000
-CHAROUT: EQU $A002
+CHARIN EQU $A000
+CHAROUT EQU $A002
 STRING: FCC 'Hello World!' FCB 0
 
 START:
