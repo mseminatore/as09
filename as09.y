@@ -616,7 +616,7 @@ line: label
     | INCLUDE STRING    { push_file_stack(symbols[$2].name); symbols[$2].refd++;}
     ;
 
-label: ID    { if (symbols[$1].type != ST_UNDEF) yyerror("label already defined"); symbols[$1].value = origin_addr + addr; symbols[$1].type = ST_LABEL; }
+label: ID ':'   { if (symbols[$1].type != ST_UNDEF) yyerror("label already defined"); symbols[$1].value = origin_addr + addr; symbols[$1].type = ST_LABEL; }
     ;
 
 byte_expr: imm8
