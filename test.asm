@@ -1,7 +1,7 @@
 ;-------------------------
 ; AS09 assember test file
 ;-------------------------
-START
+START:
 
 ;----------------------------
 ; inherent mode instructions
@@ -322,7 +322,7 @@ START
 ; branch instructions
 ;---------------------
 
-BACK
+BACK:
     BCC     BACK
     BCS     FORWARD
     BEQ     BACK
@@ -342,9 +342,9 @@ BACK
     BSR     BACK
     BVC     FORWARD
     BVS     BACK
-FORWARD
+FORWARD:
 
-LBRANCH
+LBRANCH:
     LBCC    LBRANCH
     LBCS    LBRANCH
     LBEQ    LBRANCH
