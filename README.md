@@ -38,10 +38,15 @@ find documented [here](https://colorcomputerarchive.com/repo/Documents/Books/Mot
 There are some portions of Disk EDTASM+ that are not supported. Specifically:
 
 - Line numbers
-- Labels require a following ':'
 - Save and load commands
 - Conditional compilation
 - Emulation and debugging
+
+And there are some new, more modern, assembler features that are not present in Disk EDTASM+ like:
+
+- Labels require a following ':'
+- Additional pseudo-instructions
+- Additional operators
 
 ## Assembler extensions
 
