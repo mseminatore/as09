@@ -38,6 +38,7 @@ find documented [here](https://colorcomputerarchive.com/repo/Documents/Books/Mot
 There are some portions of Disk EDTASM+ that are not supported. Specifically:
 
 - Line numbers
+- Labels require a following ':'
 - Save and load commands
 - Conditional compilation
 - Emulation and debugging
@@ -48,12 +49,14 @@ as09 adds several optional instruction extensions for convenience. They are:
 
 Mnemonic | Description
 -------- | -----------
-CLRC | Clear carry flag, ANDCC #$FE
-CLRZ | Clear zero flag, ANDCC #$FC
+BNZ | equivalent to BNE
+BZ | equivalent to BEQ
+CLRC | Clear carry flag, equivalent to ANDCC #$FE
+CLRZ | Clear zero flag, equivalent to ANDCC #$FC
 FCZ string | Declares a null terminated string
 INCLUDE string | Includes file in assembly
-SETC | Set carry flag, ORCC #$01
-SETZ | Set zero flag, ORCC #$04
+SETC | Set carry flag, equivalent to ORCC #$01
+SETZ | Set zero flag, equivalent to ORCC #$04
 
 The parser for as09 enables a few modern features like C-style backslash
 character processing in strings. For example, use `\r` in a string to
@@ -71,21 +74,21 @@ the TRS-80 CoCo that prints out a string on the screen.
 ;---------------------------------------------------
 ; Hello World for the TRS-80 CoCo in MC6809 assembly
 ;---------------------------------------------------
-CHARIN EQU $A000
-CHAROUT EQU $A002
-STRING FCC 'Hello World!' FCB 0
+CHARIN: EQU $A000
+CHAROUT: EQU $A002
+STRING: FCC 'Hello World!' FCB 0
 
-START
+START:
   LDX #STRING    ; get ptr to string
 
-LOOP
+LOOP:
   LDA ,X+        ; get next character
   BEQ DONE       ; if null terminator then done
 
   JSR [CHAROUT]  ; print out next char
   BRA LOOP       ; do it again
 
-DONE
+DONE:
   JSR [CHARIN]   ; poll keyboard
   BEQ DONE       ; wait for keypress
   SWI            ; quit
