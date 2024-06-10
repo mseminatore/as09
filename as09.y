@@ -589,7 +589,7 @@ void rel_branch(BRANCH_TYPE branch_dist, int op, int dest_addr)
 %token <ival> SBCA SBCB ROL ROR STA STB STD STX STY STS STU SUBA SUBB SUBD
 %token <ival> NUMBER A B D X Y U S PC CC DP PCR
 %token <ival> SETDP ORG FCB FDB FCC RMB END FCZ
-%token <ival> SETC CLRC SETZ CLRZ
+%token <ival> SETC CLRC SETZ CLRZ CLRD ASLD ASRD
 
 %type <ival> register index_register accumulator imm8 imm16 op8 op16 push_registers push_register
 %type <ival> direct_indexed_extended indexed words bytes byte_expr word_expr const_expr
@@ -650,6 +650,7 @@ const_expr: NUMBER
     | const_expr '/' const_expr     { $$ = $1 / $3; }
     | const_expr '&' const_expr     { $$ = $1 & $3; }
     | const_expr '|' const_expr     { $$ = $1 | $3; }
+    | '~' const_expr                { $$ = ~$2; }
     | '(' const_expr ')'            { $$ = $2; }
     ;
 
@@ -696,10 +697,13 @@ indexed: ',' index_register                 { emit_buf(0x84 | ($2 << 5)); $$ = A
 instruction: ABX    { emit(0x3A); }
     | ASLA          { emit(0x48); }
     | ASLB          { emit(0x58); }
+    | ASLD          { emit(0x58); emit(0x49); }
     | ASRA          { emit(0x47); }
     | ASRB          { emit(0x57); }
+    | ASRD          { emit(0x47); emit(0x56); }
     | CLRA          { emit(0x4F); }
     | CLRB          { emit(0x5F); }
+    | CLRD          { emit(0x4F); emit(0x5F); }
     | COMA          { emit(0x43); }
     | COMB          { emit(0x53); }
     | DAA           { emit(0x19); }
@@ -1009,10 +1013,13 @@ Tokens tokens[] =
 
     {"ASLA", ASLA},
     {"ASLB", ASLB},
+    {"ASLD", ASLD},
     {"ASRA", ASRA},
     {"ASRB", ASRB},
+    {"ASRD", ASRD},
     {"CLRA", CLRA},
     {"CLRB", CLRB},
+    {"CLRD", CLRD},
     {"COMA", COMA},
     {"COMB", COMB},
     {"CWAI", CWAI},

@@ -46,7 +46,7 @@ And there are some new, more modern, assembler features that are not present in 
 
 - Labels require a following ':'
 - Additional pseudo-instructions
-- Additional operators
+- Additional c-style expression operators
 
 ## Assembler extensions
 
@@ -54,9 +54,12 @@ as09 adds several optional instruction extensions for convenience. They are:
 
 Mnemonic | Description
 -------- | -----------
+ASLD | equivalent to ASLB followed by ROLA
+ASRD | equivalent to ASRA followed by RORB
 BNZ | equivalent to BNE
 BZ | equivalent to BEQ
 CLRC | Clear carry flag, equivalent to ANDCC #$FE
+CLRD | equivalent to CLRA followed by CLRB
 CLRZ | Clear zero flag, equivalent to ANDCC #$FC
 FCZ string | Declares a null terminated string
 INCLUDE string | Includes file in assembly

@@ -207,7 +207,10 @@
      SETC = 423,
      CLRC = 424,
      SETZ = 425,
-     CLRZ = 426
+     CLRZ = 426,
+     CLRD = 427,
+     ASLD = 428,
+     ASRD = 429
    };
 #endif
 /* Tokens.  */
@@ -380,6 +383,9 @@
 #define CLRC 424
 #define SETZ 425
 #define CLRZ 426
+#define CLRD 427
+#define ASLD 428
+#define ASRD 429
 
 
 
