@@ -76,6 +76,7 @@ the TRS-80 CoCo that prints out a string on the screen.
 ;---------------------------------------------------
 CHARIN EQU $A000
 CHAROUT EQU $A002
+
 STRING: FCC 'Hello World!' FCB 0
 
 START:
@@ -99,7 +100,7 @@ Save that code to a file called hello.asm and assemble it as follows:
 
 ```console
 % as09 hello.asm
-as09 v0.4.0 - an MC6809 assembler by Mark Seminatore (c) 2024
+as09 v0.5.0 - an MC6809 assembler by Mark Seminatore (c) 2024
 as09 assembled 33 bytes, 23 total lines of code to 'a.out'
 ```
 
@@ -108,7 +109,7 @@ along with `-o` to name the file. For example
 
 ```console
 % as09 -b -o hello.bin hello.asm
-as09 v0.4.1 - an MC6809 cross-assembler by Mark Seminatore (c) 2024
+as09 v0.5.0 - an MC6809 cross-assembler by Mark Seminatore (c) 2024
 as09 assembled 33 bytes, 23 total lines of code to 'hello.bin'
 ```
 
