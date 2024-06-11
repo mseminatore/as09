@@ -19,8 +19,8 @@
 #define INSTRUCTION_BITS    8
 
 #define MAX_CODE    0x7FFF
-#define MAX_SYMBOLS 1024
-#define MAX_FIXUPS  1024
+#define MAX_SYMBOLS 4096
+#define MAX_FIXUPS  4096
 
 #define BUF_SIZE    256
 #define INB_SIZE    10
