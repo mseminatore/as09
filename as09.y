@@ -1199,7 +1199,7 @@ void apply_fixups()
         // check that the symbols was defined
         if (symbols[f.symbol].type == ST_UNDEF)
         {
-            fprintf(stderr, "ERROR: undefined symbol '%s' in file %s, line %d\n", symbols[f.symbol].name, CURRENT_FILE, symbols[f.symbol].lineno);
+            fprintf(stderr, "ERROR: undefined symbol '%s' in file %s, line %d\n", symbols[f.symbol].name, symbols[f.symbol].filename, symbols[f.symbol].lineno);
             err_count++;
             continue;
         }
@@ -1276,7 +1276,8 @@ int add_symbol(const char *name, int lineno)
         return -1;
 
     symbols[symbol_count].name      = strdup(name);
-    symbols[symbol_count].lineno    = lineno;
+    symbols[symbol_count].lineno    = CURRENT_LINENO;
+    symbols[symbol_count].filename  = strdup(CURRENT_FILE);
     symbols[symbol_count].type      = ST_UNDEF;
     symbols[symbol_count].value     = -1;
     symbols[symbol_count].refd      = 0;

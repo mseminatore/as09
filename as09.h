@@ -11,7 +11,7 @@
 // constant decls
 //-----------------
 #define APP_NAME "as09"
-#define APP_VER "0.5.1"
+#define APP_VER "0.5.2"
 
 #define DONE 0
 
@@ -114,6 +114,7 @@ typedef enum
 typedef struct
 {
     const char *name;
+    const char *filename;   // file where symbols was defined
     int type;
     int value;
     int lineno;             // local file line number
