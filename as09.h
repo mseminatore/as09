@@ -11,7 +11,7 @@
 // constant decls
 //-----------------
 #define APP_NAME "as09"
-#define APP_VER "0.5.2"
+#define APP_VER "0.5.3"
 
 #define DONE 0
 
@@ -22,8 +22,8 @@
 #define MAX_SYMBOLS 4096
 #define MAX_FIXUPS  4096
 
-#define BUF_SIZE    256
-#define INB_SIZE    10
+#define BUF_SIZE    512
+#define INB_SIZE    32
 
 #define SA_UNDEF    -1
 #define FP_NONE     -1
