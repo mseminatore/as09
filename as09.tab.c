@@ -674,8 +674,12 @@ void emit_word(uint16_t v)
 //----------------------------------------------
 void emit_buf(uint8_t v)
 {
+    if (inst_ptr >= INB_SIZE)
+    {
+        yyerror("instruction buffer overflow");
+        return;
+    }
     inst_buf[inst_ptr++] = v;
-    assert(inst_ptr < INB_SIZE);
 }
 
 //----------------------------------------------
@@ -752,7 +756,11 @@ void constant_offset_direct(int16_t offset, int index_reg)
 {
     if (offset == 0)
     {
-        assert(fixup_pending_index == FP_NONE);
+        if (fixup_pending_index != FP_NONE)
+        {
+            yyerror("unexpected pending fixup in addressing mode");
+            return;
+        }
         emit_buf(0x84 | (index_reg << 5));
     }
     else if (offset >= -16 && offset <= 15)
@@ -762,7 +770,11 @@ void constant_offset_direct(int16_t offset, int index_reg)
         if (offset < 0)
             byte_offset |= 0x10;
 
-        assert(fixup_pending_index == FP_NONE);
+        if (fixup_pending_index != FP_NONE)
+        {
+            yyerror("unexpected pending fixup in addressing mode");
+            return;
+        }
         emit_buf(byte_offset | (index_reg << 5));
     }
     else if (offset >= -128 && offset <= 127)
@@ -789,7 +801,11 @@ void constant_offset_indirect(int16_t offset, int index_reg)
 {
     if (offset == 0)
     {
-        assert(fixup_pending_index == FP_NONE);
+        if (fixup_pending_index != FP_NONE)
+        {
+            yyerror("unexpected pending fixup in addressing mode");
+            return;
+        }
         emit_buf(0x94 | (index_reg << 5));
     }
     else if (offset >= -128 && offset <= 127)
@@ -1416,32 +1432,32 @@ static const yytype_int16 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   600,   600,   603,   604,   605,   608,   609,   612,   613,
-     614,   615,   616,   619,   622,   623,   624,   625,   626,   627,
-     628,   629,   630,   633,   634,   635,   636,   637,   638,   639,
-     640,   641,   642,   645,   646,   647,   648,   649,   650,   651,
-     652,   653,   654,   657,   658,   659,   662,   663,   666,   667,
-     670,   671,   674,   675,   676,   677,   678,   681,   682,   683,
-     684,   685,   686,   687,   688,   689,   690,   691,   692,   693,
-     694,   697,   698,   699,   700,   701,   702,   703,   704,   705,
-     706,   707,   708,   709,   710,   711,   712,   713,   714,   715,
-     716,   717,   718,   719,   720,   721,   722,   723,   724,   725,
-     726,   727,   728,   729,   730,   731,   732,   733,   734,   736,
-     737,   738,   739,   740,   741,   742,   743,   744,   745,   746,
-     747,   748,   749,   750,   751,   752,   753,   754,   755,   756,
-     757,   758,   759,   760,   761,   762,   763,   764,   765,   766,
-     767,   768,   769,   770,   771,   772,   773,   774,   775,   776,
-     777,   778,   779,   780,   781,   782,   783,   784,   785,   786,
-     787,   788,   789,   790,   791,   792,   793,   794,   795,   796,
-     797,   798,   799,   800,   801,   802,   803,   804,   805,   806,
-     807,   808,   809,   810,   811,   812,   813,   814,   815,   816,
-     817,   818,   819,   820,   821,   822,   823,   824,   825,   826,
-     827,   828,   829,   830,   831,   832,   833,   834,   835,   836,
-     837,   838,   839,   840,   841,   842,   843,   845,   846,   847,
-     848,   849,   850,   851,   854,   855,   858,   859,   862,   863,
-     866,   867,   870,   871,   872,   873,   874,   875,   876,   877,
-     878,   879,   881,   882,   883,   884,   885,   886,   887,   888,
-     889,   890,   893,   894,   895,   896,   899,   900,   901
+       0,   616,   616,   619,   620,   621,   624,   625,   628,   629,
+     630,   631,   632,   635,   638,   639,   640,   641,   642,   643,
+     644,   645,   646,   649,   650,   651,   652,   653,   654,   655,
+     656,   657,   658,   661,   662,   663,   664,   665,   666,   667,
+     668,   669,   670,   673,   674,   675,   678,   679,   682,   683,
+     686,   687,   690,   691,   692,   693,   694,   697,   698,   699,
+     700,   701,   702,   703,   704,   705,   706,   707,   708,   709,
+     710,   713,   714,   715,   716,   717,   718,   719,   720,   721,
+     722,   723,   724,   725,   726,   727,   728,   729,   730,   731,
+     732,   733,   734,   735,   736,   737,   738,   739,   740,   741,
+     742,   743,   744,   745,   746,   747,   748,   749,   750,   752,
+     753,   754,   755,   756,   757,   758,   759,   760,   761,   762,
+     763,   764,   765,   766,   767,   768,   769,   770,   771,   772,
+     773,   774,   775,   776,   777,   778,   779,   780,   781,   782,
+     783,   784,   785,   786,   787,   788,   789,   790,   791,   792,
+     793,   794,   795,   796,   797,   798,   799,   800,   801,   802,
+     803,   804,   805,   806,   807,   808,   809,   810,   811,   812,
+     813,   814,   815,   816,   817,   818,   819,   820,   821,   822,
+     823,   824,   825,   826,   827,   828,   829,   830,   831,   832,
+     833,   834,   835,   836,   837,   838,   839,   840,   841,   842,
+     843,   844,   845,   846,   847,   848,   849,   850,   851,   852,
+     853,   854,   855,   856,   857,   858,   859,   861,   862,   863,
+     864,   865,   866,   867,   870,   871,   874,   875,   878,   879,
+     882,   883,   886,   887,   888,   889,   890,   891,   892,   893,
+     894,   895,   897,   898,   899,   900,   901,   902,   903,   904,
+     905,   906,   909,   910,   911,   912,   915,   916,   917
 };
 #endif
 
@@ -4394,7 +4410,11 @@ int getopt(int n, char *args[])
 //------------------------
 int add_fixup(int symbol, int addr, FIXUP_TYPE type)
 {
-    assert(fixup_count < MAX_FIXUPS);
+    if (fixup_count >= MAX_FIXUPS)
+    {
+        yyerror("fixup table overflow");
+        return -1;
+    }
 
     LOG("adding %s fixup for %s @ addr %d\n", fixup_names[type], symbols[symbol].name, addr);
 
@@ -4472,7 +4492,8 @@ void apply_fixups()
 
         default:
             fprintf(stderr, "ERROR: unknown fixup type!\n");
-            assert(FALSE);
+            err_count++;
+            break;
         }
     }
 }
@@ -4497,7 +4518,11 @@ int lookup_symbol(const char *name)
 //-----------------------------------------
 int add_symbol(const char *name, int lineno)
 {
-    assert(symbol_count < MAX_SYMBOLS);
+    if (symbol_count >= MAX_SYMBOLS)
+    {
+        yyerror("symbol table overflow");
+        return -1;
+    }
 
     // error if symbol already exists
     if (lookup_symbol(name) > 0)

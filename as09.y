@@ -259,8 +259,12 @@ void emit_word(uint16_t v)
 //----------------------------------------------
 void emit_buf(uint8_t v)
 {
+    if (inst_ptr >= INB_SIZE)
+    {
+        yyerror("instruction buffer overflow");
+        return;
+    }
     inst_buf[inst_ptr++] = v;
-    assert(inst_ptr < INB_SIZE);
 }
 
 //----------------------------------------------
@@ -337,7 +341,11 @@ void constant_offset_direct(int16_t offset, int index_reg)
 {
     if (offset == 0)
     {
-        assert(fixup_pending_index == FP_NONE);
+        if (fixup_pending_index != FP_NONE)
+        {
+            yyerror("unexpected pending fixup in addressing mode");
+            return;
+        }
         emit_buf(0x84 | (index_reg << 5));
     }
     else if (offset >= -16 && offset <= 15)
@@ -347,7 +355,11 @@ void constant_offset_direct(int16_t offset, int index_reg)
         if (offset < 0)
             byte_offset |= 0x10;
 
-        assert(fixup_pending_index == FP_NONE);
+        if (fixup_pending_index != FP_NONE)
+        {
+            yyerror("unexpected pending fixup in addressing mode");
+            return;
+        }
         emit_buf(byte_offset | (index_reg << 5));
     }
     else if (offset >= -128 && offset <= 127)
@@ -374,7 +386,11 @@ void constant_offset_indirect(int16_t offset, int index_reg)
 {
     if (offset == 0)
     {
-        assert(fixup_pending_index == FP_NONE);
+        if (fixup_pending_index != FP_NONE)
+        {
+            yyerror("unexpected pending fixup in addressing mode");
+            return;
+        }
         emit_buf(0x94 | (index_reg << 5));
     }
     else if (offset >= -128 && offset <= 127)
@@ -1166,7 +1182,11 @@ int getopt(int n, char *args[])
 //------------------------
 int add_fixup(int symbol, int addr, FIXUP_TYPE type)
 {
-    assert(fixup_count < MAX_FIXUPS);
+    if (fixup_count >= MAX_FIXUPS)
+    {
+        yyerror("fixup table overflow");
+        return -1;
+    }
 
     LOG("adding %s fixup for %s @ addr %d\n", fixup_names[type], symbols[symbol].name, addr);
 
@@ -1244,7 +1264,8 @@ void apply_fixups()
 
         default:
             fprintf(stderr, "ERROR: unknown fixup type!\n");
-            assert(FALSE);
+            err_count++;
+            break;
         }
     }
 }
@@ -1269,7 +1290,11 @@ int lookup_symbol(const char *name)
 //-----------------------------------------
 int add_symbol(const char *name, int lineno)
 {
-    assert(symbol_count < MAX_SYMBOLS);
+    if (symbol_count >= MAX_SYMBOLS)
+    {
+        yyerror("symbol table overflow");
+        return -1;
+    }
 
     // error if symbol already exists
     if (lookup_symbol(name) > 0)
