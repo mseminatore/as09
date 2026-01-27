@@ -590,7 +590,7 @@ void LOG(const char *fmt, ...)
 	va_list valist;
 
 	va_start(valist, fmt);
-	vsprintf(buf, fmt, valist);
+	vsnprintf(buf, BUF_SIZE - 1, fmt, valist);
 	va_end(valist);
 
 	fputs(buf, stdout);
@@ -4526,6 +4526,18 @@ int compare_fn(const void *a, const void *b)
 }
 
 //------------------------
+// cleanup allocated memory
+//------------------------
+void cleanup_symbols()
+{
+    for (int i = 0; i < symbol_count; i++)
+    {
+        free((void*)symbols[i].name);
+        free((void*)symbols[i].filename);
+    }
+}
+
+//------------------------
 // print out symbols
 //------------------------
 void dump_symbols()
@@ -4906,13 +4918,25 @@ void write_bin_file()
     post.exec = htons(start_addr);
 
     // write out the header
-    fwrite(&pre, sizeof(pre), 1, fout);
+    if (fwrite(&pre, sizeof(pre), 1, fout) != 1)
+    {
+        fprintf(stderr, "ERROR: failed to write binary header\n");
+        return;
+    }
 
     // write out the code bytes
-    fwrite(&code, addr, 1, fout);
+    if (fwrite(&code, addr, 1, fout) != 1)
+    {
+        fprintf(stderr, "ERROR: failed to write binary code data\n");
+        return;
+    }
 
     // write out the tail
-    fwrite(&post, sizeof(post), 1, fout);
+    if (fwrite(&post, sizeof(post), 1, fout) != 1)
+    {
+        fprintf(stderr, "ERROR: failed to write binary trailer\n");
+        return;
+    }
 }
 
 //------------------------
@@ -5036,10 +5060,15 @@ int main(int argc, char *argv[])
     if (yyin != stdin)
     {
         push_file_stack(argv[iFirstArg]);
-        strcpy(infile, argv[iFirstArg]);
+        snprintf(infile, sizeof(infile) - 1, "%s", argv[iFirstArg]);
     }
 
     fout = fopen(g_szOutputFilename, "wb");
+    if (!fout)
+    {
+        fprintf(stderr, "ERROR: cannot open output file '%s' for writing\n", g_szOutputFilename);
+        return 1;
+    }
 
     // parse the input file
     yyparse();
@@ -5076,6 +5105,9 @@ int main(int argc, char *argv[])
 
     if (g_bUnreferenced)
         dump_unrefd_symbols();
+
+    // cleanup allocated memory
+    cleanup_symbols();
 
     // return err count for make/test purposes
     return err_count;
