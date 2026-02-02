@@ -1,7 +1,79 @@
-# as09 Assembler - AI Coding Agent Instructions
+# GitHub Copilot Instructions for as09
 
 ## Project Overview
-as09 is an **MC6809 cross-assembler** written in portable C. It parses 6809 assembly (EDTASM+ compatible syntax) for the TRS-80 CoCo and generates multiple output formats: binary DECB, Intel HEX, Verilog ROMs (sync/async/SystemVerilog), and symbol tables.
+The as09 project is an MC6809 cross-assembler written in portable C. It utilizes yacc/bison for parsing and a handwritten lexer, enabling the generation of various output formats, including binary DECB, Intel HEX, and Verilog ROMs. Understanding the architecture requires familiarity with multiple files, particularly:
+
+- **Core Files**:
+  - [as09.y](as09.y): Contains grammar rules and parser logic.
+  - [as09.h](as09.h): Defines data structures and constants.
+  - [decb.h](decb.h): Handles TRS-80 DECB format specifics.
+
+## Architecture
+The assembler operates as a single-pass parser, employing a fixup mechanism for forward references. Key components include:
+
+- **Symbol Table**: Managed in `as09.h`, it tracks symbols and their attributes.
+- **Fixups**: Resolved after parsing to back-patch code.
+- **Output Generators**: Different formats are handled by specific functions.
+
+## Developer Workflows
+### Building the Project
+Use either CMake or Makefile:
+- **CMake**:
+  ```bash
+  mkdir build
+  cd build
+  cmake ..
+  cmake --build .
+  ```
+- **Makefile**:
+  ```bash
+  make
+  ```
+
+### Testing
+Run tests using:
+```bash
+ctest
+```
+This compares generated HEX output against expected results in `test.hex`.
+
+### Debugging
+Debugging can be facilitated by examining `yyerror()` calls in the parser. Track errors using `err_count` and `warn_count`.
+
+## Project-Specific Conventions
+- **Assembly Syntax**: Follows Motorola MC6809 and EDTASM+ syntax. Notable features include:
+  - Labels must end with a colon (e.g., `LABEL:`).
+  - C-style operators (`&`, `|`, `~`) are supported in expressions.
+  - Pseudo-instructions like `ASLD`, `BNZ`, and `FCZ` are available.
+
+## Integration Points
+- **External Dependencies**: The project relies on standard C libraries and tools for building.
+- **Cross-Component Communication**: The assembler's output can be integrated with the `dsktools` project for creating RS-DOS compatible virtual disks.
+
+## Examples
+### Assembling Code
+To assemble a simple program:
+```asm
+; Hello World for the TRS-80 CoCo in MC6809 assembly
+CHAROUT EQU $A002
+STRING: FCC 'Hello World!' FCB 0
+
+START:
+  LDX #STRING
+LOOP:
+  LDA ,X+
+  BEQ DONE
+  JSR [CHAROUT]
+  BRA LOOP
+DONE:
+```
+Assemble with:
+```bash
+as09 -b -o hello.bin hello.asm
+```
+
+## Conclusion
+This document serves as a guide for AI coding agents to navigate and contribute effectively to the as09 project. For any unclear sections or additional details needed, please provide feedback for further iterations.as09 is an **MC6809 cross-assembler** written in portable C. It parses 6809 assembly (EDTASM+ compatible syntax) for the TRS-80 CoCo and generates multiple output formats: binary DECB, Intel HEX, Verilog ROMs (sync/async/SystemVerilog), and symbol tables.
 
 **Key Architecture**: Single-pass parser using Yacc/Bison with a handwritten lexer, forward-reference resolution via fixup mechanism.
 
