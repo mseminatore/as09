@@ -28,6 +28,7 @@ int g_bCompactFile  = FALSE;
 int g_bHexFile      = FALSE;
 int g_bSymbols      = FALSE;
 int g_bUnreferenced = FALSE;
+int g_bListingFile  = FALSE;
 
 // parser tracking
 int lineno = 1;
@@ -53,6 +54,13 @@ int symbol_count = 0;
 Fixup_t fixups[MAX_FIXUPS];         // list of address fixups
 int fixup_count = 0;                // count of address fixups
 int fixup_pending_index = FP_NONE;  // index of currently pending fixup 
+
+// listing file support
+Listing_t listing[MAX_LISTING];     // listing entries
+int listing_count = 0;              // count of listing entries
+char line_buf[LINE_BUF_SIZE];       // buffer for current source line
+int line_buf_pos = 0;               // current position in line buffer
+uint16_t line_start_addr = 0;       // address at start of current line 
 
 // instruction buffer
 uint8_t inst_buf[INB_SIZE];
@@ -225,7 +233,22 @@ void pop_file_stack()
 //-----------------------------------
 int getch()
 {
-    return fgetc(yyin);
+    int c = fgetc(yyin);
+    
+    // buffer the line for listing file
+    if (g_bListingFile && c != EOF && line_buf_pos < LINE_BUF_SIZE - 1)
+    {
+        if (c == '\n')
+        {
+            line_buf[line_buf_pos] = '\0';
+        }
+        else if (c != '\r')  // skip carriage returns
+        {
+            line_buf[line_buf_pos++] = c;
+        }
+    }
+    
+    return c;
 }
 
 //-----------------------------------
@@ -296,6 +319,44 @@ void write_inb()
 
     // mark instruction queue as empty
     inst_ptr = 0;
+}
+
+//------------------------
+// save listing entry
+//------------------------
+void save_listing_entry()
+{
+    if (!g_bListingFile)
+        return;
+        
+    if (listing_count >= MAX_LISTING)
+    {
+        yyerror("listing buffer overflow");
+        return;
+    }
+    
+    // Save the listing entry
+    Listing_t *entry = &listing[listing_count++];
+    entry->lineno = lineno - 1;  // lineno was already incremented for next line
+    entry->addr = origin_addr + line_start_addr;
+    entry->code_len = addr - line_start_addr;
+    
+    // Limit to max 16 bytes per line
+    if (entry->code_len > 16)
+        entry->code_len = 16;
+        
+    // Copy the code bytes
+    for (int i = 0; i < entry->code_len; i++)
+        entry->code_bytes[i] = code[line_start_addr + i];
+    
+    // Copy the source line
+    strncpy(entry->source, line_buf, LINE_BUF_SIZE - 1);
+    entry->source[LINE_BUF_SIZE - 1] = '\0';
+    
+    // Reset for next line
+    line_buf_pos = 0;
+    line_buf[0] = '\0';
+    line_start_addr = addr;
 }
 
 //------------------------
@@ -1172,6 +1233,10 @@ int getopt(int n, char *args[])
         // flag for symbols
         if (args[i][1] == 't')
             g_bSymbols = TRUE;
+
+        // flag for listing file
+        if (args[i][1] == 'l')
+            g_bListingFile = TRUE;
 	}
 
 	return i;
@@ -1620,6 +1685,7 @@ yylex01:
     // track line numbers
     if (c == '\n')
     {
+        save_listing_entry();
         lineno++;
         CURRENT_LINENO++;
         goto yylex01;
@@ -1736,6 +1802,94 @@ void write_bin_file()
     }
 }
 
+//--------------------------------
+// write out listing file (.LST)
+//--------------------------------
+void write_listing_file(const char *input_filename)
+{
+    // Generate listing filename from input filename
+    char listing_filename[512];
+    const char *dot = strrchr(input_filename, '.');
+    
+    if (dot)
+    {
+        int len = dot - input_filename;
+        strncpy(listing_filename, input_filename, len);
+        listing_filename[len] = '\0';
+    }
+    else
+    {
+        strcpy(listing_filename, input_filename);
+    }
+    strcat(listing_filename, ".lst");
+    
+    FILE *lst = fopen(listing_filename, "w");
+    if (!lst)
+    {
+        fprintf(stderr, "ERROR: failed to open listing file '%s'\n", listing_filename);
+        return;
+    }
+    
+    // Write header
+    fprintf(lst, "%s v%s - MC6809 Cross-Assembler\n", APP_NAME, APP_VER);
+    fprintf(lst, "Listing file for: %s\n\n", input_filename);
+    fprintf(lst, "Line Addr Code                             Source\n");
+    fprintf(lst, "---- ---- --------------------------------- -------\n");
+    
+    // Write listing entries
+    for (int i = 0; i < listing_count; i++)
+    {
+        Listing_t *entry = &listing[i];
+        
+        // Format: Line number (4 digits), Address (4 hex digits)
+        fprintf(lst, "%04d %04X ", entry->lineno, entry->addr);
+        
+        // Print code bytes (up to 8 per line for readability)
+        int bytes_to_show = entry->code_len < 8 ? entry->code_len : 8;
+        for (int j = 0; j < bytes_to_show; j++)
+        {
+            fprintf(lst, "%02X ", entry->code_bytes[j]);
+        }
+        
+        // Pad to align source column (8 bytes * 3 chars per byte = 24 chars)
+        for (int j = bytes_to_show; j < 8; j++)
+        {
+            fprintf(lst, "   ");
+        }
+        
+        // Print source line
+        fprintf(lst, " %s\n", entry->source);
+        
+        // If more than 8 bytes, print continuation lines
+        if (entry->code_len > 8)
+        {
+            for (int j = 8; j < entry->code_len; j += 8)
+            {
+                fprintf(lst, "     %04X ", entry->addr + j);
+                
+                int remaining = entry->code_len - j;
+                bytes_to_show = remaining < 8 ? remaining : 8;
+                
+                for (int k = 0; k < bytes_to_show; k++)
+                {
+                    fprintf(lst, "%02X ", entry->code_bytes[j + k]);
+                }
+                fprintf(lst, "\n");
+            }
+        }
+    }
+    
+    // Write footer with summary
+    fprintf(lst, "\n");
+    fprintf(lst, "---- ---- --------------------------------- -------\n");
+    fprintf(lst, "Assembly complete: %d bytes, %d lines\n", addr, listing_count);
+    fprintf(lst, "Errors: %d, Warnings: %d\n", err_count, warn_count);
+    
+    fclose(lst);
+    
+    printf("Listing file written to '%s'\n", listing_filename);
+}
+
 //------------------------
 // usage banner
 //------------------------
@@ -1747,6 +1901,7 @@ void usage()
     puts("-b\toutput .bin file");
 //    puts("-d\tdebug parsing");
     puts("-i\tget input from stdin");
+    puts("-l\tgenerate listing file");
 	puts("-o file\tset output filename");
     puts("-r\tgenerate Verilog rom file");
     puts("-s\tuse System Verilog");
@@ -1902,6 +2057,10 @@ int main(int argc, char *argv[])
 
     if (g_bUnreferenced)
         dump_unrefd_symbols();
+
+    // write listing file if requested
+    if (g_bListingFile && 0 == err_count)
+        write_listing_file(infile);
 
     // cleanup allocated memory
     cleanup_symbols();

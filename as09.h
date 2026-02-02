@@ -21,9 +21,11 @@
 #define MAX_CODE    0x7FFF
 #define MAX_SYMBOLS 4096
 #define MAX_FIXUPS  4096
+#define MAX_LISTING 10000
 
 #define BUF_SIZE    512
 #define INB_SIZE    32
+#define LINE_BUF_SIZE 256
 
 #define SA_UNDEF    -1
 #define FP_NONE     -1
@@ -130,6 +132,16 @@ typedef struct
     FIXUP_TYPE type;        // type of fixup imm8/16 or rel8/16
     int lineno;             // line number where fixup resides
 } Fixup_t;
+
+// listing structure def'n
+typedef struct
+{
+    int lineno;             // source line number
+    uint16_t addr;          // code address for this line
+    int code_len;           // number of bytes emitted for this line
+    uint8_t code_bytes[16]; // bytes emitted for this line (max 16)
+    char source[LINE_BUF_SIZE];  // source line text
+} Listing_t;
 
 // token structure def'n
 typedef struct 

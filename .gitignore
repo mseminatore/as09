@@ -3,6 +3,9 @@ as09
 .DS_Store
 build/
 
+# Generated listing files
+*.lst
+
 # Prerequisites
 *.d
 
