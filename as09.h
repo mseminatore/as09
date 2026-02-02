@@ -21,9 +21,11 @@
 #define MAX_CODE    0x7FFF
 #define MAX_SYMBOLS 4096
 #define MAX_FIXUPS  4096
+#define MAX_LISTING 10000
 
 #define BUF_SIZE    512
 #define INB_SIZE    32
+#define LINE_BUF_SIZE 256
 
 #define SA_UNDEF    -1
 #define FP_NONE     -1

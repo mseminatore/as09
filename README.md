@@ -121,6 +121,17 @@ as09 v0.5.0 - an MC6809 cross-assembler by Mark Seminatore (c) 2024
 as09 assembled 33 bytes, 23 total lines of code to 'hello.bin'
 ```
 
+To generate a listing file use the `-l` option. The listing file will have the 
+same base name as the input file with a `.lst` extension. A listing file shows 
+the assembled code with line numbers, addresses, opcodes, and source text:
+
+```console
+% as09 -l hello.asm
+as09 v0.5.0 - an MC6809 cross-assembler by Mark Seminatore (c) 2024
+as09 assembled 33 bytes, 23 total lines of code to 'a.out'
+Listing file written to 'hello.lst'
+```
+
 # Building as09
 
 You can build as09 using either Makefile or CMake. For makefile builds use:
