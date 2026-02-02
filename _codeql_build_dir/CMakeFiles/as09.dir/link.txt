@@ -1,0 +1,1 @@
+/home/runner/work/as09/.codeql-scratch/dbs/cpp/working/autobuild/bin/cc  -g -O2 -O3 -DNDEBUG -Wl,--dependency-file=CMakeFiles/as09.dir/link.d CMakeFiles/as09.dir/as09.tab.c.o -o as09
