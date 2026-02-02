@@ -238,11 +238,7 @@ int getch()
     // buffer the line for listing file
     if (g_bListingFile && c != EOF && line_buf_pos < LINE_BUF_SIZE - 1)
     {
-        if (c == '\n')
-        {
-            line_buf[line_buf_pos] = '\0';
-        }
-        else if (c != '\r')  // skip carriage returns
+        if (c != '\n' && c != '\r')  // don't include newlines or carriage returns in buffer
         {
             line_buf[line_buf_pos++] = c;
         }
@@ -1800,7 +1796,7 @@ void write_listing_file(const char *input_filename)
     
     if (dot)
     {
-        int len = dot - input_filename;
+        size_t len = dot - input_filename;
         strncpy(listing_filename, input_filename, len);
         listing_filename[len] = '\0';
     }

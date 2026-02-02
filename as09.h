@@ -133,16 +133,6 @@ typedef struct
     int lineno;             // line number where fixup resides
 } Fixup_t;
 
-// listing structure def'n
-typedef struct
-{
-    int lineno;             // source line number
-    uint16_t addr;          // code address for this line
-    int code_len;           // number of bytes emitted for this line
-    uint8_t code_bytes[16]; // bytes emitted for this line (max 16)
-    char source[LINE_BUF_SIZE];  // source line text
-} Listing_t;
-
 // token structure def'n
 typedef struct 
 {
