@@ -56,11 +56,11 @@ int fixup_count = 0;                // count of address fixups
 int fixup_pending_index = FP_NONE;  // index of currently pending fixup 
 
 // listing file support
-Listing_t listing[MAX_LISTING];     // listing entries
-int listing_count = 0;              // count of listing entries
-char line_buf[LINE_BUF_SIZE];       // buffer for current source line
-int line_buf_pos = 0;               // current position in line buffer
-uint16_t line_start_addr = 0;       // address at start of current line 
+char source_lines[MAX_LISTING][LINE_BUF_SIZE];  // all source lines
+int source_line_count = 0;                      // count of source lines
+uint16_t line_addr[MAX_LISTING];                // start address for each line
+char line_buf[LINE_BUF_SIZE];                   // buffer for current source line
+int line_buf_pos = 0;                           // current position in line buffer 
 
 // instruction buffer
 uint8_t inst_buf[INB_SIZE];
@@ -322,41 +322,28 @@ void write_inb()
 }
 
 //------------------------
-// save listing entry
+// save source line text
 //------------------------
-void save_listing_entry()
+void save_source_line()
 {
     if (!g_bListingFile)
         return;
         
-    if (listing_count >= MAX_LISTING)
+    if (source_line_count >= MAX_LISTING)
     {
-        yyerror("listing buffer overflow");
+        yyerror("source line buffer overflow");
         return;
     }
     
-    // Save the listing entry
-    Listing_t *entry = &listing[listing_count++];
-    entry->lineno = lineno - 1;  // lineno was already incremented for next line
-    entry->addr = origin_addr + line_start_addr;
-    entry->code_len = addr - line_start_addr;
+    // Save the source line text and current address
+    strncpy(source_lines[source_line_count], line_buf, LINE_BUF_SIZE - 1);
+    source_lines[source_line_count][LINE_BUF_SIZE - 1] = '\0';
+    line_addr[source_line_count] = addr;
+    source_line_count++;
     
-    // Limit to max 16 bytes per line
-    if (entry->code_len > 16)
-        entry->code_len = 16;
-        
-    // Copy the code bytes
-    for (int i = 0; i < entry->code_len; i++)
-        entry->code_bytes[i] = code[line_start_addr + i];
-    
-    // Copy the source line
-    strncpy(entry->source, line_buf, LINE_BUF_SIZE - 1);
-    entry->source[LINE_BUF_SIZE - 1] = '\0';
-    
-    // Reset for next line
+    // Reset line buffer for next line
     line_buf_pos = 0;
     line_buf[0] = '\0';
-    line_start_addr = addr;
 }
 
 //------------------------
@@ -1685,7 +1672,7 @@ yylex01:
     // track line numbers
     if (c == '\n')
     {
-        save_listing_entry();
+        save_source_line();
         lineno++;
         CURRENT_LINENO++;
         goto yylex01;
@@ -1836,43 +1823,61 @@ void write_listing_file(const char *input_filename)
     fprintf(lst, "Line Addr Code                             Source\n");
     fprintf(lst, "---- ---- --------------------------------- -------\n");
     
-    // Write listing entries
-    for (int i = 0; i < listing_count; i++)
+    // Write each source line with its corresponding code bytes
+    // Code between line_addr[N-1] and line_addr[N] is shown on line N
+    for (int line_num = 0; line_num < source_line_count; line_num++)
     {
-        Listing_t *entry = &listing[i];
+        uint16_t start_addr = (line_num > 0) ? line_addr[line_num - 1] : 0;
+        uint16_t end_addr = line_addr[line_num];
+        int code_len = end_addr - start_addr;
+        int bytes_to_show = 0;
         
-        // Format: Line number (4 digits), Address (4 hex digits)
-        fprintf(lst, "%04d %04X ", entry->lineno, entry->addr);
+        // Print line number
+        fprintf(lst, "%04d ", line_num + 1);
         
-        // Print code bytes (up to 8 per line for readability)
-        int bytes_to_show = entry->code_len < 8 ? entry->code_len : 8;
-        for (int j = 0; j < bytes_to_show; j++)
+        if (code_len > 0)
         {
-            fprintf(lst, "%02X ", entry->code_bytes[j]);
+            // Print address and code bytes (up to 8 per line)
+            fprintf(lst, "%04X ", origin_addr + start_addr);
+            
+            bytes_to_show = code_len < 8 ? code_len : 8;
+            for (int i = 0; i < bytes_to_show; i++)
+            {
+                fprintf(lst, "%02X ", code[start_addr + i]);
+            }
+            
+            // Pad to align source column
+            for (int i = bytes_to_show; i < 8; i++)
+            {
+                fprintf(lst, "   ");
+            }
         }
-        
-        // Pad to align source column (8 bytes * 3 chars per byte = 24 chars)
-        for (int j = bytes_to_show; j < 8; j++)
+        else
         {
-            fprintf(lst, "   ");
+            // No code for this line
+            fprintf(lst, "     ");
+            for (int i = 0; i < 8; i++)
+            {
+                fprintf(lst, "   ");
+            }
         }
         
         // Print source line
-        fprintf(lst, " %s\n", entry->source);
+        fprintf(lst, " %s\n", source_lines[line_num]);
         
         // If more than 8 bytes, print continuation lines
-        if (entry->code_len > 8)
+        if (code_len > 8)
         {
-            for (int j = 8; j < entry->code_len; j += 8)
+            for (int i = 8; i < code_len; i += 8)
             {
-                fprintf(lst, "     %04X ", entry->addr + j);
+                fprintf(lst, "     %04X ", origin_addr + start_addr + i);
                 
-                int remaining = entry->code_len - j;
-                bytes_to_show = remaining < 8 ? remaining : 8;
+                int bytes_remaining = code_len - i;
+                bytes_to_show = bytes_remaining < 8 ? bytes_remaining : 8;
                 
-                for (int k = 0; k < bytes_to_show; k++)
+                for (int j = 0; j < bytes_to_show; j++)
                 {
-                    fprintf(lst, "%02X ", entry->code_bytes[j + k]);
+                    fprintf(lst, "%02X ", code[start_addr + i + j]);
                 }
                 fprintf(lst, "\n");
             }
@@ -1882,7 +1887,7 @@ void write_listing_file(const char *input_filename)
     // Write footer with summary
     fprintf(lst, "\n");
     fprintf(lst, "---- ---- --------------------------------- -------\n");
-    fprintf(lst, "Assembly complete: %d bytes, %d lines\n", addr, listing_count);
+    fprintf(lst, "Assembly complete: %d bytes, %d lines\n", addr, source_line_count);
     fprintf(lst, "Errors: %d, Warnings: %d\n", err_count, warn_count);
     
     fclose(lst);
