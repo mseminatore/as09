@@ -1,0 +1,3 @@
+[submodule "aout"]
+	path = aout
+	url = https://github.com/mseminatore/aout.git
